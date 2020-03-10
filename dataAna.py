@@ -2,6 +2,7 @@ from scapy.all import *
 
 def sendAndCap(ip):
     ans, unans = sr(IP(dst = ip) / TCP(sport=30, dport=80))
+    
     dics=[]
     if len(ans) != 0:
         for a in ans:

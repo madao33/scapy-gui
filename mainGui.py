@@ -2,7 +2,8 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import scrolledtext
-
+import dataAna
+import scapyTest2
 from scapy.all import *
 
 root= Tk()
@@ -70,31 +71,60 @@ btn_file.grid(row=0,column=6)
 
 # 捕获按钮回调函数
 def startCap(event):
-    print("开始抓取数据")
-    ans, unans = sr(IP(dst = "192.168.0.102") / TCP(sport = 30, dport = 80, flags = "S"))
-    print(ans[0])
-    dataCap.insert(END,str(ans[0]))
+    ip = link.get()
+    if len(ip) == 0:
+        dataCap.insert(END, "请输入IP\n")
+        return
+    print("开始抓取数据, ip为：",ip)
+    # ip = "192.168.0.102"
+    
+    dics, packets = dataAna.sendAndCap(ip)
+    # 接收到数据不为空
+    if len(dics) != 0:
+        for dic in dics:
+            for k,v in dic.items():
+                print(str(k) + ":" + str(v))
+                dataAnalyse.insert(END,str(k)+":"+str(v)+'\n')
+    else:
+        dataAnalyse.insert(END,"received nothing!!!\n")
+    
+    dataCap.insert(END,packets)
+    
+    dataAnalyse.insert(END, "\n")
+    dataCap.insert(END, "\n")
 
 Label(root).grid(row=1,column=0)
 btn_start = Button(root,
-                text='start capture',
+                text='send&capture',
                 width=10,
                 height=2)
 btn_start.bind('<Button-1>',startCap)
 btn_start.grid(row=1, column=0,rowspan=2,columnspan=2)
 
 # 停止捕获回调函数
-def stopCap(event):
+def sniffData(event):
+    pkts = sniff(iface=IFACES.dev_from_index(12),count=3) # 简单的抓取数据包
+    wrpcap("demo.pcap", pkts)  # 保存为demo.pcap
+        
+    PD = scapyTest2.PcapDecode()  # 实例化该类为PD
+    pcap_test = rdpcap("demo.pcap")  # 这个demo.pcap包含3次连接
+    data_result = dict()  # 将解析结果存入dict
+    for p in pcap_test:
+        data_result = scapyTest2.PcapDecode.ether_decode(PD, p)
+        for k,v in data_result.items():
+            dataAnalyse.insert(END,str(k)+":"+str(v)+"\n")
+    dataCap.insert(END, pkts)
 
-    print("停止抓取数据")
+    dataCap.insert(END,"\n")
+    dataAnalyse(END,"\n")
 
-btn_stop = Button(root,
-                    text = 'stop capture',
+btn_sniff = Button(root,
+                    text = 'sniff',
                     height=2,
                     state='active',
                     width=10)
-btn_stop.bind('<Button-1>', stopCap)
-btn_stop.grid(row=1,column=2,rowspan=2,columnspan=2)
+btn_sniff.bind('<Button-1>', sniffData)
+btn_sniff.grid(row=1,column=2,rowspan=2,columnspan=2)
 
 # 数据解析回调函数
 def analyzeData(event):

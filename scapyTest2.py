@@ -172,15 +172,15 @@ class PcapDecode:
         return data
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    pkts = sniff(iface=IFACES.dev_from_index(12),count=3) # 简单的抓取数据包
-    wrpcap("demo.pcap", pkts)  # 保存为demo.pcap
+#     pkts = sniff(iface=IFACES.dev_from_index(12),count=3) # 简单的抓取数据包
+#     wrpcap("demo.pcap", pkts)  # 保存为demo.pcap
         
-    PD = PcapDecode()  # 实例化该类为PD
-    pcap_test = rdpcap("demo.pcap")  # 这个demo.pcap包含3次连接
-    data_result = dict()  # 将解析结果存入dict
-    for p in pcap_test:
-        data_result = PcapDecode.ether_decode(PD, p)
-        print(data_result)
+#     PD = PcapDecode()  # 实例化该类为PD
+#     pcap_test = rdpcap("demo.pcap")  # 这个demo.pcap包含3次连接
+#     data_result = dict()  # 将解析结果存入dict
+#     for p in pcap_test:
+#         data_result = PcapDecode.ether_decode(PD, p)
+#         print(data_result)
 

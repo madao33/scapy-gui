@@ -1,11 +1,11 @@
 from scapy.all import *
 
 def sendAndCap(ip):
-    ans, unans = sr(IP(dst = ip) / TCP(sport = 30, dport = 80, flags = "S"))
+    ans, unans = sr(IP(dst = ip) / TCP(sport=30, dport=80))
     dics=[]
     if len(ans) != 0:
         for a in ans:
-            for p in packet:
+            for p in a:
                 print(p)
                 try:
                     dic={}
@@ -22,4 +22,5 @@ def sendAndCap(ip):
     else:
         print("未接收到数据")
     # f.close()
-    return dics,packets
+    return dics,ans
+

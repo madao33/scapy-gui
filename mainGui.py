@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import scrolledtext
 from tkinter import messagebox
+import netifaces
 import dataAna
 import protoAna
 from scapy.all import *
@@ -10,13 +11,15 @@ import struct
 import secretEncode as SE
 root= Tk()
 
+# 获取网卡名
+ifaceName = netifaces.gateways()['default'][netifaces.AF_INET][1]
 # 设定窗体分辨率，即大小
 root.geometry('1366x720') # 这里的乘号不是 * ，而是小写英文字母 x
 print("开始创建窗体")
 
 # 链接文本控件
 linkText = Label(root, 
-            text='IP/mask',
+            text='sniff counts',
             font=18,
             bd='2')
 linkText.grid(row=0,column=0)
@@ -79,8 +82,9 @@ def pcapAna(ptks):
         dataCap.insert(END,"\n")
         dataCap.see(END)
 
-def NetCap(ip):
-    ptks = sniff(iface = IFACES.dev_from_index(12),count=5)
+def NetCap(cnt):
+    # ptks = sniff(iface = IFACES.dev_from_index(12),count=5)
+    ptks = sniff(iface = ifaceName,count=cnt)
     pcapAna(ptks)
 
 def dataRead(file):
@@ -89,37 +93,40 @@ def dataRead(file):
 
 # 设置按钮控件
 # 数据解析回调函数
-def startCap_Analyse(event):
+def sniffCap_Analyse(event):
     
-    ip = link.get()
-    file = filePath.get()
-    chose = False
-    data = dict()
-    # 根据用户的选择，调用抓包函数或者本地文件
-    if len(ip) == 0 | len(file) == 0:
-        messagebox.showwarning("warnig!","There should be a ip or filepath at least!")#提出警告对话窗
-    elif len(ip) !=0 & len(file) != 0:
-        chose = messagebox.askquestion("conflict", "choose Ip?")
-        if(chose == True):
-            data = NetCap(ip)
-            return
-        else:
-            data = dataRead(file)
-            return
-    elif len(ip) !=0:
-        data = NetCap(ip)
-        return
+    s = link.get()
+    if len(s)==0:
+        messagebox.showwarning('warning!','Please input the number of the pockets you want sniff!')
     else:
-        data = dataRead(file)
-        return    
+        cnt = int(s)
+        NetCap(cnt)
+
+# 本地协议包读取
+def fileCap_Analyse(event):
+
+    file = filePath.get()
+    if len(file)==0:
+        messagebox.showwarning('warning!','Please choose the path of the pockets you want extract!')
+    else:
+        dataRead(file)   
 
 # 开始按钮外观属性设置
-btn_start = Button(root,
-                        text='start',
+btn_sniff = Button(root,
+                        text='sniff',
                         height=2,
                         width=10)
-btn_start.bind('<Button-1>', startCap_Analyse)
-btn_start.grid(row=2,column=0,rowspan=2,columnspan=2)
+btn_sniff.bind('<Button-1>', sniffCap_Analyse)
+btn_sniff.grid(row=2,column=0,rowspan=2,columnspan=2)
+
+btn_file = Button(root,
+                        text='fileExtract',
+                        height=2,
+                        width=10)
+btn_file.bind('<Button-1>', fileCap_Analyse)
+btn_file.grid(row=2,column=2,rowspan=2,columnspan=2)
+
+
 
 # 消息文本控件
 dataCap = scrolledtext.ScrolledText(root,
